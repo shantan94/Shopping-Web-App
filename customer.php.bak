@@ -1,0 +1,53 @@
+<?php
+/*error_reporting(E_ALL);
+ini_set('display_errors','On');
+
+try {*/
+  session_start();
+  $error='';
+  if(isset($_SESSION['username'])){
+	header('Location: Page1.php');
+  }
+  if(isset($_POST['submit'])){
+  $username=$_POST['username'];
+  /*$connect=mysqli_connect("localhost","root","root","CheapBooks");
+  $query="select * from Customer where username='$username' and password=md5('$password')";
+  $result=mysqli_query($connect,$query);
+  $rows=mysqli_num_rows($result);
+  if($rows==1){
+	  $_SESSION['username']=$username;*/
+  try{
+  $dbh = new PDO("mysql:host=127.0.0.1:3306;dbname=CheapBooks","root","root",array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+  $dbh->beginTransaction();
+  $stmt = $dbh->prepare('select * from Customer where username=:username and password=md5(:password)');
+  $stmt->bindParam(':username', $_POST['username']);
+  $stmt->bindParam(':password', $_POST['password']);
+  $stmt->execute();
+  if($stmt->rowCount()==1){
+	  $_SESSION['username']=$username;
+	  header('Location: Page1.php');
+  } 
+  else{
+	$error="username or password is invalid";
+  }
+  }
+  catch (PDOException $e) {
+  print "Error!: " . $e->getMessage() . "<br/>";
+  die();
+  }
+}
+?>
+<html>
+<head><title>Customer Login</title></head>
+<body>
+<form method="post" action="">
+<table>
+<tr><td>Username: </td><td><input type="text" id="username" name="username" placeholder="enter username" required></td></tr>
+<tr><td>Password: </td><td><input type="password" id="password" name="password" placeholder="enter password" required></td></tr>
+<tr><td><input type="submit" value="Log in" name="submit"></td></tr>
+</table>
+<span><?php echo $error; ?></span>
+</form>
+<input type="button" value="New users must register here">
+</body>
+</html>
